@@ -12,3 +12,18 @@
     @apply bg-slate-100 overflow-x-hidden;
   }
 }
+
+@layer components {
+  .btn {
+    @apply border-2 border-secondary rounded-md px-2 py-[2px] 
+      transition-all hover:bg-secondary active:scale-105 active:brightness-90 
+  }
+  .btn-primary {
+    @apply border-primary hover:bg-primary
+  }
+  .btn-secondary {
+    @apply border-secondary hover:bg-secondary
+  }
+}
+
+

@@ -1,6 +1,10 @@
 <script lang="ts">
 import type { Post } from '$lib/types/blog.d.ts'
-export let posts : Post[] = []
+
+let posts : Post[] = [] 
+fetch('/api/blogs').then(async res => {
+  posts = await res.json()
+})
 </script>
 
 <div class="p-4 w-full h-full bg-secondary flex flex-col justify-center items-center text-center gap-4">

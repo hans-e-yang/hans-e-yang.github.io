@@ -1,7 +1,7 @@
 <script>
 import { tweened } from "svelte/motion";
 import { cubicOut, quadInOut } from "svelte/easing";
-	import { onMount } from "svelte";
+import { onMount } from "svelte";
 
 const hellos = [
   "Hello",
@@ -90,7 +90,7 @@ onMount(()=> {
 })
 </script>
 
-<div class="w-full h-20 overflow-hidden text-center relative ">
+<div class="w-full h-20 overflow-hidden text-center relative text-nowrap">
   <div class="absolute w-full h-full" style="transform: translate(0, {100 * offset}%)">
     <strong class="select-none top-[-100%]" aria-hidden="true">{hello_text}</strong>
     <strong>{previous_hello_text}</strong>

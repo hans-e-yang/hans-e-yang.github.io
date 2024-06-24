@@ -6,15 +6,13 @@
   import HelloScreen from "./HelloScreen.svelte";
   import AboutMeScreen from "./aboutMeScreen.svelte";
   import BlogsScreen from "./blogsScreen.svelte";
-
-  export let data
+  import InteractiveScreen from "./interactiveScreen.svelte";
 
   const screens = [
     {component: HelloScreen, name: "Greetings"},
     {component: AboutMeScreen, name: "About Me"},
-    {component: BlogsScreen, name: "Blogs", props: {
-      posts: data.posts
-    }},
+    {component: BlogsScreen, name: "Blogs"},
+    {component: InteractiveScreen, name: "Interactive"}
   ]
 
   let active_screen_id = 0
@@ -44,7 +42,7 @@
     <!-- buttons -->
     <div class="flex justify-between">
       {#each screens as {name}, id }
-        <button on:click={() => {active_screen_id = id}}>
+        <button class="btn btn-primary" on:click={() => {active_screen_id = id}}>
           {name}
         </button>
       {/each}
