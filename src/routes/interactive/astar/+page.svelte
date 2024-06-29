@@ -1,6 +1,7 @@
 <script lang="ts">
-  import { Astar } from "./astar.js";
+  import { Astar } from "$lib/astar";
   import Grid from "./grid.svelte";
+  import { type SearchProblem, AstarSearch } from '$lib/astarv2'
 
   type Vector2D =  {
     x: number,
@@ -189,6 +190,7 @@
   }
   function stopAnim() {
     clearInterval(interval)
+    animIsRunning = false
   }
 </script>
 
@@ -233,7 +235,8 @@
       <details>
         <summary>Heuristic Weight Compared to Cost</summary>
 
-        <p>The A* algorithm runs a uniform cost search on the cost adjusted by the heuristic (estimate of the future cost). In order to gurantee that A* returns the path with least cost, the heuristic must be admissible, never overestimating the actual cost to get to the goal (<a href="https://en.wikipedia.org/wiki/A*_search_algorithm#:~:text=The%20heuristic%20function%20is%20problem,path%20from%20start%20to%20goal.">see more</a>). When heuristic is 0, A* becomes a uniform cost search.</p>
+        <p> Artificially scale the heuristic.
+          (<a href="https://en.wikipedia.org/wiki/A*_search_algorithm#:~:text=The%20heuristic%20function%20is%20problem,path%20from%20start%20to%20goal.">see more</a>)</p>
       </details>
       0 <input type="range" max="2" min="0" bind:value={heuristicWeight} /> 2
 

@@ -7,6 +7,7 @@
   import AboutMeScreen from "./aboutMeScreen.svelte";
   import BlogsScreen from "./blogsScreen.svelte";
   import InteractiveScreen from "./interactiveScreen.svelte";
+	import { onMount } from "svelte";
 
   const screens = [
     {component: HelloScreen, name: "Greetings"},
@@ -21,6 +22,18 @@
   let progress_bar_value = tweened(0, {easing: cubicInOut})
   const progress_bar_value_scale = 100
   $: $progress_bar_value = active_screen_id * progress_bar_value_scale
+  
+
+  // Automatically traverse to proper screen
+  onMount(() => {
+    const id = window.location.href.split('#')[1]
+    for (let i = 0; i < screens.length; i++) {
+      if (screens[i].name.replace(/\s+/g, '') == id) {
+        active_screen_id = i
+        break
+      }
+    }
+  })
 </script>
 
 <div class="h-screen w-screen flex flex-col">
@@ -31,6 +44,7 @@
         //@ts-ignore
         progress_bar_value.set(Number(e.target.value || 0), {duration: 0})
         // A bit of duplicated logic here but okay..
+        active_screen_id = Math.round(e.target.value / progress_bar_value_scale)
         $progress_bar_value = active_screen_id * progress_bar_value_scale
       }}
       value={$progress_bar_value} 
@@ -52,7 +66,7 @@
   <!-- Screens -->
   {#key active_screen_id}
     <div class="h-full w-full grow absolute" transition:fade>
-      <svelte:component this={screen.component} {...screen.props}/>
+      <svelte:component this={screen.component} />
     </div>
   {/key}
 
