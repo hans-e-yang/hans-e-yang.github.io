@@ -1,5 +1,37 @@
 import { PriorityQueue } from './astar'
 
+type RunGeneratorOptions = {
+  yields_per_interval?: number,
+  interval?: number,
+  signal?: AbortSignal
+}
+
+function runGenerator<T, TReturn, TNext>(
+  generator: Generator<T, TReturn, TNext>,
+  on_yield?: (_: T | TReturn) => void,
+  options: RunGeneratorOptions =  {}
+) {
+  let yields = options.yields_per_interval || 1000
+
+  let id = setInterval(() =>{
+    for (let i = 0; i < yields; i++) {
+      let {value, done} = generator.next()
+      if (done) { 
+        clearInterval(id)
+        break
+      }
+      if (on_yield) on_yield(value)
+    }
+  }, options.interval || 10)
+
+  // Enable cancelling
+  if (options.signal) {
+    function onabort() {clearInterval(id)}
+    options.signal.addEventListener("abort", onabort, {once: true})
+  }
+
+}
+
 export type SearchProblem<T> = {
   start_state: T,
   is_end: (state: T) => boolean,
@@ -112,22 +144,23 @@ export function* AstarSearchGenerator<State>(
   }
 }
 
-/** Used when yielded values from AstarSearchGenerator is not needed but wants to execute the algorithm asynchronously */
+/** Wrapper for the generator AstarSearch. */
 export function AstarSearchAsync<State>(
   search_problem: SearchProblem<State>,
   heuristic: (state: State) => number,
-  iterations_per_cycle = 1000,
-  ms_per_cycle = 10
+  on_yield?: (_: void | [State | undefined, State[]]) => void,
+  options?: RunGeneratorOptions
 ) {
   const promise : Promise<SearchResult<State>> = new Promise((resolve, reject) => {
     const generator = AstarSearchGenerator(search_problem, heuristic, x => resolve(x))
-    let i = setInterval(() => {
-      for (let i = 0; i < iterations_per_cycle-1; i++) generator.next();
-      const {done} = generator.next()
-      if (done) {
-        clearInterval(i)
-      }
-    }, ms_per_cycle)
+
+    runGenerator(generator, on_yield, options)
+
+    if (options?.signal) {
+      options.signal.addEventListener("abort", () => {
+        reject(options.signal?.reason)
+      }, {once: true})
+    }
   })
   return promise
 }
@@ -138,20 +171,17 @@ export async function IDAstarAsync<State>(
   iterations_per_cycle = 1000,
   ms_per_cycle = 10
 ) : Promise<SearchResult<State>> {
+
   let threshold = heuristic(search_problem.start_state)
 
+  // Iterative deepening
   while (true) {
     let p : Promise<IDAType<State>> = new Promise((res, rej) => {
-      let result: any
-      let generator = DAstarSearch(search_problem, heuristic, threshold, res => result = res)
+      // Store the search result in result
+      let generator = DAstarSearch(search_problem, heuristic, threshold, x => res(x))
 
-      let i = setInterval(()=>{
-        for (let i = 0; i < iterations_per_cycle; i++) generator.next()
-        if (generator.next().done) {
-          res(result)
-          clearInterval(i)
-        }
-      }, ms_per_cycle)
+      // Search is an expensive operation, do this to offload it, solve it asynchronously
+      runGenerator(generator, )
     })
     let result = await p
     if (result.success) return result
@@ -164,6 +194,7 @@ export async function IDAstarAsync<State>(
 // If min == Infinity, no possible solution
 type IDAType<State> = SearchResult<State> | (SearchFailure & {min: number})
 
+// Does one iteration of IDAstar
 // Search all states while cost + heuristic <= threshold
 // Returns the minimal next f value
 function* DAstarSearch<State>(

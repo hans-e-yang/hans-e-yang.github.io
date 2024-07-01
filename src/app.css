@@ -7,22 +7,26 @@
 @layer base {
   * {
     font-family: "Plus Jakarta Sans", sans-serif;    
+    @apply text-text focus:outline-primary
   }
   body {
-    @apply bg-slate-100 overflow-x-hidden;
+    @apply bg-bg overflow-x-hidden;
+  }
+  input, select {
+    @apply transition-all border border-primary bg-bg  accent-primary;
   }
 }
 
 @layer components {
   .btn {
-    @apply border-2 border-secondary rounded-md px-2 py-[2px] 
-      transition-all hover:bg-secondary active:scale-105 active:brightness-90 
+    @apply border-2 rounded-md px-2 py-[2px] 
+      transition-all active:scale-105 active:brightness-90 
   }
   .btn-primary {
-    @apply border-primary hover:bg-primary
+    @apply border-primary hover:bg-primary hover:text-bg
   }
   .btn-secondary {
-    @apply border-secondary hover:bg-secondary
+    @apply border-secondary hover:bg-secondary hover:text-bg
   }
 }
 

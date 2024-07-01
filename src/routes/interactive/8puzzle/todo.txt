@@ -1,9 +1,0 @@
-0) Create helper objects that allow for cancelling the astar promises, returning a function to cancel the promise
-  - Also create helper function to make the generator calling code look better
-  run_generator_async(generator, iterations, ms_per_iterations)
-
-1) Seperate the heuristics functions into another file
-  3) Implement linear conflicts, create a lookup table to cache the results. 
-  4) The same could also be implemented for the manhattan distance. Generalize for any target_state. < Could be better implemented, but ignore for now.
-
-2) Make the UI look better (Ignore set puzzle for now)

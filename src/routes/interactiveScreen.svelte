@@ -4,7 +4,7 @@ const things = [
 ]
 </script>
 
-<div class="p-4 w-full h-full bg-secondary flex flex-col justify-center items-center text-center gap-4">
+<div class="p-4 w-full h-full flex flex-col justify-center items-center text-center gap-4">
   <h3 class="text-3xl font-bold">👇 Interactive Stuff 👇</h3>
 
   <ul class="flex flex-col gap-4">

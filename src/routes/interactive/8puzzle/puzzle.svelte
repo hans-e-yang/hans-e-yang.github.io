@@ -35,20 +35,21 @@
 
   /** Determines if the n-puzzle is solvable based on grid_size */
   export function puzzleIsSolvable(arr: number[]) {
+    let grid_size = 4
     // Count the inversions
     let inversions = 0
-    arr = arr.filter(x => x)
+    let new_arr = arr.filter(x => x)
     for (let i = 0; i < grid_size**2-1; i++) {
       for (let j = i+1; j < grid_size**2-1; j++) {
-        if (arr[i] > arr[j]) inversions++
+        if (new_arr[i] > new_arr[j]) inversions++
       }
     }
     // Different formulas for odd and even n puzzles
     if (grid_size % 2 == 1) {
       return inversions % 2 == 0
     } else {
-      let black_row = Math.floor(arr.indexOf(0) / 3)
-      return (inversions + black_row) % 2 == 1
+      let blank_row = Math.floor(arr.indexOf(0) / grid_size)
+      return (inversions + blank_row) % 2 == 1
     }
   }
 
@@ -86,7 +87,7 @@
   {#each puzzle as value, idx (value)}
     <div on:click={() => swap(idx)} animate:flip={{duration: 500}} 
       class="aspect-square grid place-items-center text-3xl
-      {value? 'border border-primary bg-sky-400': ''}"
+      {value? 'border border-primary bg-primary/25': ''}"
     >
       {value == 0? '' : value}
     </div>

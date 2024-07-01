@@ -1,10 +1,10 @@
 <script lang="ts">
   import Puzzle from "./puzzle.svelte";
-	import { AstarSearch, AstarSearchAsync, type SearchProblem, type AstarReturnType, IDAstarAsync } from "$lib/astarv2";
+  import { type SearchProblem, Astar, IDAstar } from "$lib/search";
+  import { manhattan, misplaced_tiles, manhattan_cached, linear_conflict } from './heuristics'
   let puzzle : Puzzle
   
   // Assumes that the target_state is 0 at the end.
-
   let puzzle_state : number[]
   let target_state : number[]
   let grid_size : number = 3
@@ -12,9 +12,19 @@
   let solution_steps : number[][] = []  
   let solution_index = -1
 
+
+  let abort : AbortController
+  let is_solving = false
+
   // Updates puzzle when seeking solution
   $: if (solution_index >= 0 && solution_index < solution_steps.length) {
     puzzle_state = solution_steps[solution_index]
+  }
+
+  $: if (grid_size) {
+    solution_steps = []
+    solution_index = 0
+    msg = ""
   }
 
   $: target_state = puzzle?.getSolvedPuzzle()
@@ -26,27 +36,14 @@
   }
   // heuristic methods
   const heuristicMethods = {
-    "Manhattan": (state: number[]) => {
-      function distanceBetweenIdx(a: number, b: number) {
-        let x1 = a % grid_size
-        let y1 = Math.floor(a / grid_size)
-        let x2 = b % grid_size
-        let y2 = Math.floor(b / grid_size)
-        return Math.abs(x1-x2) + Math.abs(y1-y2)
-      }
-      return state.reduce((totalVal, num, pos) => {
-        if (num == 0) return totalVal
-        return totalVal + distanceBetweenIdx(pos, num-1)
-      }, 0)
-    },
-    "Misplaced Tiles": (state: number[]) => state
-      .filter((x, i) => x != target_state[i])
-      .length,
-    }
+    "Manhattan": manhattan,
+    "Manhattan + Linear Conflicts": linear_conflict,
+    "Misplaced Tiles": misplaced_tiles
+  }
 
   const searchMethods = {
-    "A*": AstarSearchAsync,
-    "IDA*": IDAstarAsync
+    "A*": Astar,
+    "IDA*": IDAstar
   }
 
   function getSuccessorsAndCost(state: number[]) {
@@ -66,38 +63,55 @@
   /** Defines the search problem and runs the search */
   function runSearch() {
     solution_steps = []
-    solution_index = -1
+    solution_index = 0
     target_state = puzzle.getSolvedPuzzle()
     // Define the search problem
     let searchProblem : SearchProblem<number[]> = {
       start_state: puzzle_state,
       is_end: state => state.every((x, i) => x == target_state[i]),
       // Returns the next states possible and the cost
-      succAndCost: getSuccessorsAndCost
+      succ_and_cost: getSuccessorsAndCost
     }
     
     // Set the heuristic method and artificially scale the heuristic to see greedy or ucs behaviour
-    let func = heuristicMethods[searchOptions.heuristic]
+    let func = heuristicMethods[searchOptions.heuristic](target_state, grid_size)
     let heuristic = (state: number[]) => func(state) * searchOptions.heuristic_weight
 
-    return searchMethods[searchOptions.search_algorithm](searchProblem, heuristic, 10_000)
+    // For aborting
+    abort = new AbortController()
+
+    return searchMethods[searchOptions.search_algorithm](searchProblem, heuristic, {
+      signal: abort.signal,
+      yields_per_interval: 100_000,
+      interval: 10,
+      hash: x => x.join(',')
+    })
   }
 
   /** Wrapper around runSearch which also manipulates the ui */
   let msg = ''
-  async function solve8Puzzle() {
+  function solve8Puzzle() {
+    solution_steps = []
     solution_index = 0
     msg = 'solving...'
+    is_solving = true
     let time = Date.now()
-    let result = await runSearch()
-    if (result.success) {
-      msg = `Solved in ${Date.now() - time}ms`
-      solution_steps = result.route
-      if (result.iterations) 
-        msg += ` | States searched: ${result.iterations}`
-    } else {
-      msg = "No solution found."
-    }
+
+    runSearch()
+      .then(result => {
+        if (result.success) {
+          msg = `Solved in ${Date.now() - time}ms`
+          solution_steps = result.route
+
+          if (result.iterations)
+            msg += ` | States searched: ${result.iterations}`
+        } else {
+          msg = "No solution found."
+        }
+      })
+      .catch(x => msg = x)
+      .finally(() => is_solving = false)
+
   }
 
   let str : string
@@ -118,11 +132,11 @@
       }
       checks[num] = true
     }
-    if (!puzzleIsSolvable(arr)) {
+    if (!puzzle.puzzleIsSolvable(arr)) {
       console.error("Unsolvable puzzle")
       return
     }
-    puzzle = arr
+    puzzle_state = arr
   }
 </script>
 
@@ -146,7 +160,11 @@
   </div>
 {/if}
 
-<button class="btn btn-primary" on:click={solve8Puzzle}>solve</button>
+{#if !is_solving}
+  <button class="btn btn-primary" on:click={solve8Puzzle}>Solve</button>
+{:else}
+  <button class="btn btn-primary" on:click={()=>abort.abort("Search Stopped by User")}>Stop</button>
+{/if}
 <p>{msg}</p>
 
 <!-- Search options-->
@@ -165,7 +183,7 @@
     <option value={h}>{h}</option>
   {/each}
 </select>
-<input type="range" min={0} max={2} bind:value={searchOptions.heuristic_weight} />
+<input type="range" min={0} max={5} bind:value={searchOptions.heuristic_weight} />
 
 <br>
 <label>

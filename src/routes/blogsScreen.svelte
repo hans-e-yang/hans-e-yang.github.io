@@ -7,7 +7,7 @@ fetch('/api/blogs').then(async res => {
 })
 </script>
 
-<div class="p-4 w-full h-full bg-secondary flex flex-col justify-center items-center text-center gap-4">
+<div class="p-4 w-full h-full flex flex-col justify-center items-center text-center gap-4">
   <h3 class="text-3xl font-bold"> ✒️ Blogs ✒️ </h3>
 
   <p>These also act as documentation of my process in making some of my projects</p>
