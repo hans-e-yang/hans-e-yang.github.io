@@ -1,6 +1,7 @@
 <script>
 const things = [
-  {name: "A* Pathfinding", description: "A* Pathfinding animation on a grid. ", slug: "astar", date: "24 June 2024"}
+  {name: "A* Pathfinding", description: "A* Pathfinding animation on a grid. ", slug: "astar", date: "24 June 2024"},
+  {name: "N-Puzzle Solver", description: "A* and IDA* search algorithm applied to N-Puzzle.", slug: "n-puzzle", date: "2 July 2024"}
 ]
 </script>
 

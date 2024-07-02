@@ -1,4 +1,7 @@
 <script lang="ts">
+  // Seperate grid tiles into seperate svelte component. 
+  // +page.svelte only to manage the search settings.
+  // Use the new API
   import { Astar } from "$lib/astar";
   import Grid from "./grid.svelte";
   import { type SearchProblem, AstarSearch } from '$lib/astarv2'
