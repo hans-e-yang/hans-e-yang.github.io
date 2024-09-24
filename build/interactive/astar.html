@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="../favicon.png" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		
+		<link href="../_app/immutable/assets/0.d3MB2SEG.css" rel="stylesheet">
+		<link href="../_app/immutable/assets/5.CYifW1Na.css" rel="stylesheet">
+		<link rel="modulepreload" href="../_app/immutable/entry/start.CZmEJv84.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/entry.LhacbUGB.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/scheduler.DYp-TRml.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/index.oC9NCIlQ.js">
+		<link rel="modulepreload" href="../_app/immutable/entry/app.BliMPYny.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/preload-helper.D6kgxu3v.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/index.BHCOM26g.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/0.CQsQNDtT.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/2.B0Mw6NuM.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/5.CBuCNgKb.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/idastar.CvlbTybJ.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/each.DL-8HYg2.js">
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">  <nav class="w-full p-2 border-b border-primary" data-svelte-h="svelte-1tbi0kh"><a href="/#Interactive" class="btn btn-primary">Back to Home</a></nav> <h2 class="p-2 text-2xl" data-svelte-h="svelte-orspui">Pathfinding with search algorithms</h2> <main class="col-center md:flex-row p-4"> <div class="h-[50vh] sm:h-[80vh] w-full grow">    <div class="w-full h-full relative"><canvas></canvas> <canvas class="absolute top-0"></canvas></div></div>  <div class="col-center p-2 gap-4 md:w-[500px]"><div class="flex gap-4 items-center"><p data-svelte-h="svelte-ewkpou">Draw</p> <button class="btn btn-primary" data-svelte-h="svelte-5dnqfq">Draw Wall</button> <button class="btn btn-primary" data-svelte-h="svelte-t1tmx5">Remove Wall</button></div> <div class="flex gap-4 items-center"><p data-svelte-h="svelte-1v5dig3">Actions</p> <button class="btn btn-primary" data-svelte-h="svelte-isuew8">Clean Grid</button> <button class="btn btn-primary" data-svelte-h="svelte-1w1aykp">Remove All Walls</button></div> <hr class="border-b w-full border-primary">  <button class="btn btn-primary" data-svelte-h="svelte-1084l1d">Start</button>   <p class="font-bold" data-svelte-h="svelte-1douxqb">Settings</p> <div class="form-entries"><p data-svelte-h="svelte-v4m3ml">Grid Tile Size:</p> <input type="number" value="15"> <p data-svelte-h="svelte-1ds6v1k">Interval(ms):</p> <input type="number" value="10"> <p data-svelte-h="svelte-meudba">Search function:</p> <select><option value="IDA*">IDA*</option><option value="A*">A*</option></select> <p data-svelte-h="svelte-17kf45b">Enable 8 way movement:</p> <label class="w-12 inline-block h-6 rounded-full border-2 relative transition-all overflow-hidden after:aspect-square after:border after:scale-110 before:scale-110 after:left-0 after:top-0 after:h-full before:inset-0 after:bg-primary after:border-primary before:bg-primary border-primary before:-translate-x-full svelte-1m35esh"><input class="w-0 h-0 absolute" type="checkbox"> </label> <p data-svelte-h="svelte-t45spy">Heuristic weight:</p> <div class="flex gap-2">0 <input type="range" max="5" min="0" step="0.5" value="1"> 5 <small>(1)</small></div> <p data-svelte-h="svelte-18w4ufu">Heuristic Function:</p> <select class="border"><option value="Manhattan">Manhattan</option><option value="Euclid">Euclid</option></select></div></div></main> 
+			
+			<script>
+				{
+					__sveltekit_ga7w41 = {
+						base: new URL("..", location).pathname.slice(0, -1)
+					};
+
+					const element = document.currentScript.parentElement;
+
+					const data = [null,null,null];
+
+					Promise.all([
+						import("../_app/immutable/entry/start.CZmEJv84.js"),
+						import("../_app/immutable/entry/app.BliMPYny.js")
+					]).then(([kit, app]) => {
+						kit.start(app, element, {
+							node_ids: [0, 2, 5],
+							data,
+							form: null,
+							error: null
+						});
+					});
+				}
+			</script>
+		</div>
+	</body>
+</html>
