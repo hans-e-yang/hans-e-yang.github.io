@@ -1,11 +1,9 @@
 import type { Metadata } from '$lib/types/blog'
+import blogs from "$lib/blogs"
 
-// export async function entries() {
-//   const res = await fetch("api/blogs")
-//   let json = res.json()
-//   console.log(json)
-//   return []
-// }
+export async function entries() {
+  return blogs
+}
 
 
 export async function load({params}) {

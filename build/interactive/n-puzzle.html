@@ -6,32 +6,32 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		
 		<link href="../_app/immutable/assets/0.d3MB2SEG.css" rel="stylesheet">
-		<link rel="modulepreload" href="../_app/immutable/entry/start.CZmEJv84.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/entry.LhacbUGB.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/scheduler.DYp-TRml.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/index.oC9NCIlQ.js">
-		<link rel="modulepreload" href="../_app/immutable/entry/app.BliMPYny.js">
+		<link rel="modulepreload" href="../_app/immutable/entry/start.CZhnpPrR.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/entry.BHd0Zrjt.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/scheduler.CNrD0iER.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/index.3FREMsNR.js">
+		<link rel="modulepreload" href="../_app/immutable/entry/app.ClK68a4T.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/preload-helper.D6kgxu3v.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/index.BHCOM26g.js">
-		<link rel="modulepreload" href="../_app/immutable/nodes/0.CQsQNDtT.js">
-		<link rel="modulepreload" href="../_app/immutable/nodes/2.B0Mw6NuM.js">
-		<link rel="modulepreload" href="../_app/immutable/nodes/6.Aw28iPrj.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/idastar.CvlbTybJ.js">
-		<link rel="modulepreload" href="../_app/immutable/chunks/each.DL-8HYg2.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/index.FU__VVKC.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/0.EPDaXhhF.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/2.oVfR4TyR.js">
+		<link rel="modulepreload" href="../_app/immutable/nodes/6.CVxW3_ty.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/idastar.DJVtWG59.js">
+		<link rel="modulepreload" href="../_app/immutable/chunks/each.B0jH3mUL.js">
 		<link rel="modulepreload" href="../_app/immutable/chunks/index.B95gyQFH.js">
 	</head>
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">  <nav class="w-full p-2 border-b border-primary" data-svelte-h="svelte-1tbi0kh"><a href="/#Interactive" class="btn btn-primary">Back to Home</a></nav> <div class="col-center md:flex-row md:justify-center p-2 md:mt-12">  <div class="w-full max-w-sm grid grid-cols-3 grid-rows-3 m-4 max-w-sm border border-primary"><div class="aspect-square grid place-items-center text-3xl border border-primary bg-primary/25">1 </div><div class="aspect-square grid place-items-center text-3xl border border-primary bg-primary/25">2 </div><div class="aspect-square grid place-items-center text-3xl border border-primary bg-primary/25">3 </div><div class="aspect-square grid place-items-center text-3xl border border-primary bg-primary/25">4 </div><div class="aspect-square grid place-items-center text-3xl border border-primary bg-primary/25">5 </div><div class="aspect-square grid place-items-center text-3xl border border-primary bg-primary/25">6 </div><div class="aspect-square grid place-items-center text-3xl border border-primary bg-primary/25">7 </div><div class="aspect-square grid place-items-center text-3xl border border-primary bg-primary/25">8 </div><div class="aspect-square grid place-items-center text-3xl "> </div></div> <div class="col-center">  <div class="form-entries"><p data-svelte-h="svelte-14xgpzc">Manage Puzzle State</p> <div class="flex gap-2"><button class="btn btn-primary" data-svelte-h="svelte-chwl2g">Reset</button> <button class="btn btn-primary" data-svelte-h="svelte-jtc0p3">Shuffle</button> <button class="btn btn-primary" data-svelte-h="svelte-15ybnq6">Edit Puzzle</button></div></div>   <button class="btn btn-primary" data-svelte-h="svelte-6mdkgo">Solve</button>     <p class="font-bold text-center" data-svelte-h="svelte-mmdz13">Options</p> <div class="form-entries"><p data-svelte-h="svelte-1egkckh">Puzzle Size</p> <select><option value="3" data-svelte-h="svelte-o0sxy">3</option><option value="4" data-svelte-h="svelte-hbkz3g">4</option><option value="5" data-svelte-h="svelte-1yo0cq6">5</option></select> <p data-svelte-h="svelte-pvzhpn">Search Algorithm</p> <select><option value="A*">A*</option><option value="IDA*">IDA*</option></select> <p data-svelte-h="svelte-1gdy33z">Heuristic Method</p> <select><option value="Misplaced Tiles">Misplaced Tiles</option><option value="Manhattan">Manhattan</option><option value="Manhattan + Linear Conflicts">Manhattan + Linear Conflicts</option></select> <p data-svelte-h="svelte-bb0mys">Heuristic Weight</p> <div class="flex gap-2">0
           <input type="range" min="0" max="5" value="1">
           5
-          <p class="border-l pl-2">Value: 1</p></div></div> <p class="pt-3 border-t" data-svelte-h="svelte-145nivb">Setting a higher heuristic weight will return a suboptimal result faster. <br>
+          <p class="border-l pl-2">Value: 1</p></div></div> <p class="pt-3 border-t" data-svelte-h="svelte-1mh82m6">Setting a higher heuristic weight will return a suboptimal result faster. <br>
         It is recommended to set heuristic weight &gt; 1 for puzzle size 4 and 5. <br>
         IDA* is a memory efficient version of A*. A* can usually only work for <br>
-        8-puzzle, otherwise memory requirements become too high. <br></p></div></div> 
+        8-puzzle, since larger n-puzzles would require too much memory. <br></p></div></div> 
 			
 			<script>
 				{
-					__sveltekit_ga7w41 = {
+					__sveltekit_17wr5h2 = {
 						base: new URL("..", location).pathname.slice(0, -1)
 					};
 
@@ -40,8 +40,8 @@
 					const data = [null,null,null];
 
 					Promise.all([
-						import("../_app/immutable/entry/start.CZmEJv84.js"),
-						import("../_app/immutable/entry/app.BliMPYny.js")
+						import("../_app/immutable/entry/start.CZhnpPrR.js"),
+						import("../_app/immutable/entry/app.ClK68a4T.js")
 					]).then(([kit, app]) => {
 						kit.start(app, element, {
 							node_ids: [0, 2, 6],

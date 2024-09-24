@@ -1,10 +1,5 @@
 <script lang="ts">
-import type { Post } from '$lib/types/blog.d.ts'
-
-let posts : Post[] = [] 
-fetch('/api/blogs').then(async res => {
-  posts = await res.json()
-})
+import blogs from "$lib/blogs"
 </script>
 
 <div class="p-4 w-full h-full flex flex-col justify-center items-center text-center gap-4">
@@ -12,7 +7,7 @@ fetch('/api/blogs').then(async res => {
 
   <p>These also act as documentation of my process in making some of my projects</p>
   <ul class="flex flex-col gap-4">
-    {#each posts as blog}
+    {#each blogs as blog}
       <li>
         <a href="/blogs/{blog.slug}">
           <h4 class="text-xl font-semibold">{blog.title}</h4>
