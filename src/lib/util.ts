@@ -13,3 +13,13 @@ export function stringSwap(str: string, a: number, b: number) {
   ;[arr[a], arr[b]] = [arr[b], arr[a]]
   return arr.join('')
 }
+
+export function debounce(func: CallableFunction, interval: number) {
+  if (!func) return 
+  let timer : number
+
+  return (...args) => {
+    clearTimeout(timer)
+    timer = setTimeout(()=> func(...args), interval)
+  }
+}

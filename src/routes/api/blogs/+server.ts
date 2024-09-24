@@ -11,12 +11,14 @@ export const GET = async () => {
     
     if (file && typeof file == 'object' && 'metadata' in file && typeof file.metadata == 'object' && slug)  {
       const metadata = file.metadata as Metadata
-      metadata.published && blogs.push({...metadata, slug})
+      if (metadata.published) {
+        blogs.push({...metadata, slug})
+      }
     }
   }
 
   blogs.sort((a, b) => 
-    new Date(a.date || 0).getTime() - new Date(b.date || 0).getTime()
+    new Date(a.publishedDate || 0).getTime() - new Date(b.publishedDate || 0).getTime()
   )
 
   return json(blogs)

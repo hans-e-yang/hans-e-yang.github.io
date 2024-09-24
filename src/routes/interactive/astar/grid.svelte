@@ -1,3 +1,7 @@
+<!--
+This component helps in drawing a grid in html.
+Doesn't hold any state.
+-->
 <script lang="ts">
 import { createEventDispatcher, onMount } from "svelte";
 
@@ -16,29 +20,46 @@ type Vector2D = {
 let dimensions = {x: 0, y: 0}
 let tileSize = 15
 
+let _color = 'black'
+
+export function get_dimensions() {return dimensions}
+
+
+export function set_grid_color(color: string) {
+  _color = color
+  update_grid_lines()
+}
+
+export function change_tile_size(tile_size: number) {
+  tileSize = tile_size
+  update_grid_lines()
+}
+
 export function clear() {
   fgctx?.clearRect(0, 0, fg.clientWidth, fg.clientHeight)
 }
-function clearAll() {
+function clear_all() {
   bgctx?.clearRect(0, 0, bg.clientWidth, bg.clientHeight)
   fgctx?.clearRect(0, 0, fg.clientWidth, fg.clientHeight)
 }
 
-export function resizeCanvas() {
+export function resize_canvas() {
   bg.width = div.clientWidth
   fg.width = div.clientWidth
   bg.height = div.clientHeight
   fg.height = div.clientHeight
+  update_grid_lines()
 }
 
 /** Clears the canvas and update the grid based on the current size of the canvas */
-export function updateGridLines() {
-  clearAll()
+export function update_grid_lines() {
+  clear_all()
 
   dimensions.x = Math.trunc(div.clientWidth / tileSize)
   dimensions.y = Math.trunc(div.clientHeight / tileSize)
 
   // Draw the Vertical lines
+  if (bgctx) bgctx.strokeStyle = _color
   bgctx?.clearRect(0, 0, bg.clientWidth, bg.clientHeight)
   bgctx?.beginPath()
   for (let x = 0; x <= dimensions.x * tileSize; x += tileSize) {
@@ -53,21 +74,21 @@ export function updateGridLines() {
 }
 
 /** Draws a tile in the x, y tile position.*/
-export function drawTile(tile: Vector2D, color: string) {
-  if (!validTile(tile)) return
+export function draw_tile(tile: Vector2D, color: string) {
+  if (!is_valid_tile(tile)) return
   if (!fgctx) return
   fgctx.fillStyle = color
   fgctx.fillRect(tile.x*tileSize, tile.y*tileSize, tileSize, tileSize)
 }
 
 /** Erases a tile in the x, y tile position.*/
-export function eraseTile(tile: Vector2D) {
-  if (!validTile(tile)) return
+export function erase_tile(tile: Vector2D) {
+  if (!is_valid_tile(tile)) return
   fgctx?.clearRect(tile.x*tileSize, tile.y*tileSize, tileSize, tileSize)
 }
 
 /** Checks if tile coordinates is inside the grid.*/
-export function validTile(tile: Vector2D) {
+export function is_valid_tile(tile: Vector2D) {
   return (
     (0 <= tile.x && tile.x < dimensions.x) &&
       (0 <= tile.y && tile.y < dimensions.y)
@@ -75,7 +96,7 @@ export function validTile(tile: Vector2D) {
 }
 
 /** Transforms canvas pixel coordinates into tile coordinates.*/
-function canvasToTileCoordinates(canvasCoord: Vector2D) {
+function canvas_to_tile_coordinates(canvasCoord: Vector2D) {
   return {
     x: Math.trunc(canvasCoord.x / tileSize),
     y: Math.trunc(canvasCoord.y / tileSize)
@@ -87,7 +108,7 @@ const dispatch = createEventDispatcher()
 let isPenDown = false
 let oldTile = {x: -1, y: -1}
 
-const getCoordinatesFromEvent = (ev: MouseEvent | TouchEvent) => {
+const get_coordinates_from_event = (ev: MouseEvent | TouchEvent) => {
   if ('touches' in ev) {
     let rect = fg?.getBoundingClientRect()
     if (!rect) return
@@ -104,37 +125,42 @@ const getCoordinatesFromEvent = (ev: MouseEvent | TouchEvent) => {
   }
 }
 
-const penDown = (ev: MouseEvent | TouchEvent) => {
+const pen_down = (ev: MouseEvent | TouchEvent) => {
   if (isPenDown) return
 
-  const coord = getCoordinatesFromEvent(ev)
+  const coord = get_coordinates_from_event(ev)
   if (!coord) return
 
   isPenDown = true
-  let newTile = canvasToTileCoordinates(coord)
-  dispatch('draw', newTile)
+  let newTile = canvas_to_tile_coordinates(coord)
+  dispatch('pen_down', newTile)
   oldTile = newTile
 }
 
-const penMove = (ev : MouseEvent | TouchEvent) => {
+const pen_move = (ev : MouseEvent | TouchEvent) => {
   ev.preventDefault()
   if (!isPenDown) return
 
-  const coord = getCoordinatesFromEvent(ev)
+  const coord = get_coordinates_from_event(ev)
   if (!coord) return 
   
-  let newTile = canvasToTileCoordinates(coord)
+  let newTile = canvas_to_tile_coordinates(coord)
   if (newTile.x !== oldTile.x || newTile.y !== oldTile.y) {
     dispatch('draw', newTile)
     oldTile = newTile
   }
 }
 
+const pen_up = () => {
+  isPenDown = false
+  dispatch('pen_up')
+}
+
 onMount(() => {
   bgctx = bg.getContext("2d") || undefined
   fgctx = fg.getContext("2d") || undefined
-  resizeCanvas()
-  updateGridLines()
+  resize_canvas()
+  update_grid_lines()
 })
 </script>
 
@@ -143,14 +169,14 @@ onMount(() => {
   <canvas 
     class="absolute top-0" 
     bind:this={fg}
-    on:mousedown={penDown}
-    on:mouseup={() => isPenDown = false}
-    on:mousemove={penMove}
-    on:mouseleave={() => isPenDown = false}
+    on:mousedown={pen_down}
+    on:mouseup={pen_up}
+    on:mousemove={pen_move}
+    on:mouseleave={pen_up}
 
-    on:touchstart={penDown}
-    on:touchend={() => isPenDown = false}
-    on:touchcancel={() => isPenDown = false}
-    on:touchmove={penMove}
+    on:touchstart={pen_down}
+    on:touchend={pen_up}
+    on:touchcancel={pen_up}
+    on:touchmove={pen_move}
   />
 </div>

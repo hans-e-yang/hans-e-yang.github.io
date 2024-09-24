@@ -7,13 +7,17 @@
 @layer base {
   * {
     font-family: "Plus Jakarta Sans", sans-serif;    
-    @apply text-text focus:outline-primary
+    scroll-behavior: smooth;
+    @apply text-text focus:outline-primary;
   }
   body {
     @apply bg-bg overflow-x-hidden;
   }
   input, select {
     @apply transition-all border border-primary bg-bg  accent-primary;
+  }
+  input {
+    @apply px-1
   }
 }
 
@@ -22,11 +26,41 @@
     @apply border-2 rounded-md px-2 py-[2px] 
       transition-all active:scale-105 active:brightness-90 
   }
+
+  .btn[disabled] {
+    @apply cursor-not-allowed opacity-50 bg-gray-300 text-gray-500 
+    hover:bg-gray-300 focus:bg-gray-300
+  }
+
   .btn-primary {
     @apply border-primary hover:bg-primary hover:text-bg
   }
+
   .btn-secondary {
     @apply border-secondary hover:bg-secondary hover:text-bg
+  }
+
+  .link {
+    @apply underline 
+  }
+
+  .link-primary {
+    @apply text-primary hover:text-primary-600 visited:text-primary-600;
+  }
+
+  .link-secondary {
+    @apply text-secondary hover:text-secondary-600 visited:text-secondary-600;
+  }
+
+  .col-center {
+    @apply flex flex-col items-center gap-2
+  }
+
+  .form-entries {
+    @apply grid grid-cols-[auto,1fr] gap-2 items-center
+  }
+  .form-entries > * {
+    @apply odd:text-right
   }
 }
 

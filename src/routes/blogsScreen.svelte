@@ -16,7 +16,7 @@ fetch('/api/blogs').then(async res => {
       <li>
         <a href="/blogs/{blog.slug}">
           <h4 class="text-xl font-semibold">{blog.title}</h4>
-          <p>{blog.date}</p>
+          <p>{blog.publishedDate}</p>
         </a>
         <p>{blog.description}</p>
       </li>

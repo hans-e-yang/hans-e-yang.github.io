@@ -2,7 +2,7 @@ import type { SearchProblem, SearchResult, SearchFailure, SearchSuccess} from ".
 import { runGenerator, type RunGeneratorOptions} from "./util"
 
 type IDAstarOptions<State> = RunGeneratorOptions & {
-  on_yield?: (_: DAstarYield<State>) => void,
+  on_progress?: (_: DAstarYield<State>) => void,
   on_iteration_done?: (threshold: number) => void,
   hash?: (_: State) => number | string
 }
@@ -22,7 +22,7 @@ export async function IDAstar<State>(
         rej(options.signal.reason)
 
       let generator = DAstarSearch(search_problem, heuristic, threshold, options?.hash || JSON.stringify)
-      runGenerator(generator, options?.on_yield, x => res(x),options)
+      runGenerator(generator, options?.on_progress, x => res(x),options)
       
       if (options?.signal)
         options.signal.addEventListener("abort", 
@@ -33,7 +33,6 @@ export async function IDAstar<State>(
     let result = await p
     if (result.success) return result
     if (result.min == Infinity) return {success: false}
-    console.log(threshold)
     if (options?.on_iteration_done)
       options.on_iteration_done(threshold)
     threshold = result.min
@@ -42,7 +41,7 @@ export async function IDAstar<State>(
 
 // If min == Infinity, no possible solution
 type DAstarReturn<State> = SearchSuccess<State> | (SearchFailure & {min: number})
-type DAstarYield<State> = [path_added?: State, path_removed?: State]
+type DAstarYield<State> = [path_added: State, path_removed: State[]]
 
 // Does one iteration of IDAstar
 // Search all states while cost + heuristic <= threshold
@@ -63,8 +62,9 @@ function* DAstarSearch<State>(
   let path_check = [hash(search_problem.start_state)]
 
   let min = Infinity
-  yield [path[0].state, undefined]
+  yield [path[0].state, []]
 
+  let removed_path = []
   while (path.length > 0) {
     let current = path.at(-1)!
 
@@ -73,9 +73,9 @@ function* DAstarSearch<State>(
     if (f > threshold) {
       min = (f < min) ? f : min
       // Guranteed to return, since the loop only runs while path has a node
-      let { state } = path.pop()!
+      // Add popped state to yield
+      removed_path.push(path.pop()!.state)
       path_check.pop()
-      yield [undefined, state]
       continue
     }
 
@@ -93,9 +93,8 @@ function* DAstarSearch<State>(
     let successor = current.succ.pop()
     // If no more successors, remove the current state
     if (!successor) {
-      let {state} = path.pop()!
       path_check.pop()
-      yield [undefined, state]
+      removed_path.push(path.pop()!.state)
       continue
     }
 
@@ -109,7 +108,8 @@ function* DAstarSearch<State>(
           path_check.indexOf(hash(next_state)) == -1 )
     })
     path_check.push(hash(successor.next_state))
-    yield [successor.next_state, undefined]
+    yield [successor.next_state, removed_path]
+    removed_path = []
   }
 
   return {

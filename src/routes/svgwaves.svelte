@@ -24,6 +24,11 @@
   </svg>
 
 <style>
+
+svg {
+  translate: 0 min(calc(-20vw + 130px), 0px);
+}
+
 .path-0, .path-1, .path-2, .path-3 {
   animation-timing-function: linear;
   animation-iteration-count: infinite;

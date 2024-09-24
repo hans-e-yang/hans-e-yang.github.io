@@ -1,22 +1,19 @@
-export async function entries() {
-  const files = import.meta.glob('../*.md')
-  const slugs = Object.keys(files).map(x => {
-    return {slug: x.slice(3, -3)}
-  })
+import type { Metadata } from '$lib/types/blog'
 
-  console.log(slugs)
+// export async function entries() {
+//   const res = await fetch("api/blogs")
+//   let json = res.json()
+//   console.log(json)
+//   return []
+// }
 
-  return slugs
-}
 
 export async function load({params}) {
   const post = await import(`../${params.slug}.md`)
-  const { title, date } = post.metadata || {title: "", date: ""}
   const content = post.default
 
   return {
     content,
-    title,
-    date
+    ...post.metadata as Metadata
   }
 }

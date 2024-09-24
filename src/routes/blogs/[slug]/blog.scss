@@ -1,0 +1,60 @@
+@import url("./prism.css");
+
+.blog {
+  span.icon {
+    @apply h-6 w-6 mr-2 inline-block bg-primary hover:bg-primary-600 rounded-sm;
+    mask-image: url("/icons/link.svg");
+  }
+  a {
+    @apply text-primary underline hover:text-primary-600 visited:text-primary-600;
+  }
+
+  h2 {
+    @apply text-center font-bold text-2xl my-12;
+  }
+
+  h3 {
+    @apply text-center font-semibold text-xl my-8;
+  }
+
+  p {
+    @apply mb-6;
+  }
+
+  ol > li {
+    @apply ml-6 list-decimal;
+  }
+  
+  ul > li {
+    @apply ml-6 list-disc;
+  }
+  
+  ol, ul {
+    @apply mb-6;
+  }
+
+  pre:has(> code), img {
+    @apply border border-primary;
+  }
+
+  /* code:not(pre > code) { */
+  /*   @apply border border-primary p-2 text-justify; */
+  /* } */
+
+  img {
+    @apply max-w-md
+  }
+
+  pre > code > *{
+    @apply font-mono;
+  }
+
+  pre + p {
+    @apply text-center;
+  }
+
+  figure > figcaption {
+    @apply text-center;
+  }
+}
+

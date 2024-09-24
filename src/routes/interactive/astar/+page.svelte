@@ -1,92 +1,41 @@
 <script lang="ts">
-  // Seperate grid tiles into seperate svelte component. 
-  // +page.svelte only to manage the search settings.
-  // Use the new API
-  import { Astar } from "$lib/astar";
-  import Grid from "./grid.svelte";
-  import { type SearchProblem, AstarSearch } from '$lib/astarv2'
+  // `+page.svelte` only contains sets up the Astar Search
+  // The state of the grid is stored in `grid_state.svelte`
+  // `grid.svelte` provides an abstraction for the html canvas
+
+
+  // TODO: Change abortController to custom object to have pause and resume controls
+  // TODO: Add API to use workers. See vite worker(new URL('', import.meta.url), {type: 'module'}) <== This would be better for npuzzle
+  // TODO: write blog post on how this api changed from weird class => generators => Promise based wrapper + abort controller => web workers
+
+  import Grid from "./grid_state.svelte";
+  import { Astar, IDAstar, type SearchResult, type SearchProblem} from "$lib/search";
+  import Toggle from "$components/toggle.svelte";
+  import {debounce} from '$lib/util'
 
   type Vector2D =  {
     x: number,
     y: number
   }
 
-  type Tile = "start" | "end" | "wall" | "empty" | "frontier" | "route" | "known"
-  // Astar grid animation options
-  /** Grid Tile colors */
-  let colors : {[k in Tile]: string} = {
-    "start" : "blue",
-    "end": "green",
-    "wall": "black",
-    "empty": "none",
-    "known": "brown",
-    "frontier": "red",
-    "route": "yellow"
-  }
-
   let grid : Grid
 
-  // Data representation of grid
-  function coordToKey(coord: Vector2D) {
-    return coord.x * 10_000 + coord.y
-  }
-  function keyToCoord(key: number) {
-    return {x: Math.trunc(key/10_000), y: key%10_000}
-  }
-  function GridTiles() {
-    const tiles = new Map<number, Tile>()
-
-    return {
-      getWithKey: tiles.get,
-      get: (coord: Vector2D) =>
-        tiles.get(coordToKey(coord)) || "empty",
-
-      set: (coord: Vector2D, val: Tile) => {
-        if (val == "empty") {
-          tiles.delete(coordToKey(coord))
-          grid.eraseTile(coord)
-        } else {
-          tiles.set(coordToKey(coord), val)
-          grid.drawTile(coord, colors[val])
-        }
-      },
-      redraw: () => {
-        grid.clear()
-        for (const [key, state] of tiles.entries()) {
-          grid.drawTile(keyToCoord(key), colors[state])
-        }
-      }
-    }
-  }
-  let gridTiles = GridTiles()
-  let start = {x: -1, y: -1}
-  let end = {x: -1, y: -1}
-
   // Astar Algorithm Stuff
+  const search_settings = {
+    distance_method : "Manhattan" as keyof typeof distance_methods,
+    allow_diagonal_movement: false,
+    heuristic_weight: 1,
+    search_method: "A*" as keyof typeof search_methods,
+    animation_delay: 10
+  }
 
-  /** Distance method use to determine heuristic for Astar Algorithm. Default is using the Manhattan distance. */
-  let distanceMethod : "Manhattan" | "Euclid" = "Manhattan"
-  const distanceMethods = {
+  const distance_methods = {
     "Manhattan": (a: Vector2D, b: Vector2D) => 
       Math.abs(a.x - b.x) + Math.abs(a.y - b.y),
     "Euclid": (a: Vector2D, b: Vector2D) =>
       Math.sqrt((a.x - b.x)**2 + (a.y - b.y)**2)
   }
 
-  /** Weight of heuristic compared to the cost. Default is 1, meaning the heuristic more or less estimates the exactly */
-  let heuristicWeight = 1
-
-  function heuristic(state: number, target_state: number) {
-    let a = keyToCoord(state)
-    let b = keyToCoord(target_state)
-    // Manhattan distance
-    let _heuristic = distanceMethods[distanceMethod](a, b)
-
-    return Math.trunc(_heuristic * 10 * heuristicWeight)
-  }
-
-  /** If true, allows diagonal movement (8 way movement) for the pathfinding */
-  let allowDiagonalMovement = false
   const possibleMovements = [
     {x: 1, y: 0, cost: 10},
     {x: -1, y: 0, cost: 10},
@@ -97,161 +46,146 @@
     {x: -1, y: 1, cost: 14},
     {x: 1, y: -1, cost: 14}
   ]
-  function actionsAndCost(state: number) {
-    let position = keyToCoord(state)
+
+  const search_methods = {
+    "IDA*": IDAstar,
+    "A*": Astar
+  }
+
+  function actionsAndCost(state: Vector2D) {
+    let position = state
     let actionsAndCostArr = []
-    let movements = allowDiagonalMovement ? 8 : 4
+    let movements = search_settings.allow_diagonal_movement ? 8 : 4
     for (let i = 0; i < movements; i++) {
       let mov = possibleMovements[i]
       let action = {
         x: mov.x + position.x,
         y: mov.y + position.y
       }
-      if (grid.validTile(action) && gridTiles.get(action) != "wall") {
+      if (grid.is_valid_tile(action)) {
         actionsAndCostArr.push({
-          state: coordToKey(action),
-          cost: mov.cost
+          next_state: action,
+          // Could be gridtiles.get(action).cost for individual cost for each tile
+          cost: mov.cost 
         })
       }
     }
     return actionsAndCostArr
   }
 
-  let astar = Astar<number>(actionsAndCost, heuristic)
+  let abort = new AbortController()
+  let promise : Promise<SearchResult<Vector2D>> | undefined
 
-  // Grid drawing methods
-  let tileToDraw : "start" | "end" | "wall" | "empty" =  "start"
-
-  function drawHandler(ev: Event & {detail: Vector2D}) {
-    switch (tileToDraw) {
-      case "start":
-        if (gridTiles.get(ev.detail) == "end") return
-        gridTiles.set(start, "empty")
-        start = ev.detail
-        gridTiles.set(start, "start")
-        astar.setStartState(coordToKey(start))
-        break
-
-      case "end":
-        if (gridTiles.get(ev.detail) == "start") return
-        gridTiles.set(end, "empty")
-        end = ev.detail
-        gridTiles.set(end, "end")
-        astar.setEndState(coordToKey(end))
-        break
-
-      case "wall":
-        if (gridTiles.get(ev.detail) == "empty") {
-          gridTiles.set(ev.detail, "wall")
-        }
-        break
-
-      case "empty":
-        if (gridTiles.get(ev.detail) == "wall") {
-          gridTiles.set(ev.detail, "empty")
-        }
-        break
+  async function run() {
+    abort = new AbortController()
+    let end = grid.get_end()
+    let search_problem : SearchProblem<Vector2D> = {
+      start_state : grid.get_start(),
+      is_end : (state) => state.x == end.x && state.y == end.y,
+      succ_and_cost: actionsAndCost
     }
-  }
+    grid.clean()
+    let heuristic = (a: Vector2D) =>
+      Math.trunc(distance_methods[search_settings.distance_method](a, end) * 10) * search_settings.heuristic_weight
 
 
-  // Astar animation
-  let interval: number
-  let generator: Generator<[number | undefined, number[]], void, unknown>
-  let animIsRunning = false
-  let totalCost = 0
-  /** Run the astar animation pathfinding */
-  function run(
-    animationDelay = 100, 
-  ) 
-    {
-    animIsRunning = true
-    gridTiles.redraw()
-    clearInterval(interval)
-    generator = astar.searchRouteGenerator()
-
-    interval = setInterval(() => {
-      let result = generator.next()
-
-      if (result.done) {
-        clearInterval(interval)
-        for (const key of astar.getRoute().slice(1, -1)) {
-          grid.drawTile(keyToCoord(key), colors.route)
+    promise = search_methods[search_settings.search_method](search_problem, heuristic, {
+      yields_per_interval: 1,
+      interval: search_settings.animation_delay,
+      on_progress: ([known, frontiers]) => {
+        for (const frontier of frontiers)
+          grid.draw_tile_animation(frontier, 'frontier')
+        if (known)
+          grid.draw_tile_animation(known, 'known')
+        grid.draw_start_and_end()
+      },
+      on_iteration_done: () => {
+        grid.clean()
+      },
+      signal: abort.signal
+    })
+      .then(x => {
+        if (x.success) {
+          for (const route of x.route.slice(1, -1)) 
+            grid.draw_tile_animation(route, 'route')
         }
-        animIsRunning = false
-        totalCost = astar.getTotalCost()
-      } else {
-        let [known, frontier] = result.value
-        grid.drawTile(keyToCoord(known || -1), colors.known)
-        for (const key of frontier) {
-          grid.drawTile(keyToCoord(key), colors.frontier)
-        }
-        grid.drawTile(start, colors.start)
-        grid.drawTile(end, colors.end)
-      }
-    }, animationDelay)
+        return x
+      })
   }
-  function stopAnim() {
-    clearInterval(interval)
-    animIsRunning = false
-  }
+
+  let grid_size = 15
+  $: resize = debounce(grid?.resize_grid, 300)
+  $: grid_size && resize && resize(grid_size)
 </script>
 
-<h2 class=" p-2 text-2xl">Astar Pathfinding</h2>
-<div class="p-2 flex flex-col sm:flex-row gap-3">
-  <div class="h-[50vh] sm:h-[80vh] grow">
-    <Grid on:draw={drawHandler} bind:this={grid}/>
+<h2 class=" p-2 text-2xl">Pathfinding with search algorithms</h2>
+
+<main class="col-center md:flex-row p-4">
+  <!-- Display -->
+  <div class="h-[50vh] sm:h-[80vh] w-full grow">
+    <Grid bind:this={grid}/>
   </div>
 
-  <div>
-    <div>
-      <p>Drawing tile: {tileToDraw}</p>
-      <button class="btn btn-secondary" on:click={() => tileToDraw = "start"}>start</button>
-      <button class="btn btn-secondary" on:click={() => tileToDraw = "end"}>end</button>
-      <button class="btn btn-secondary" on:click={() => tileToDraw = "wall"}>wall</button>
-      <button class="btn btn-secondary" on:click={() => tileToDraw = "empty"}>remove wall</button>
-      <br>
-      <button class="btn btn-secondary mt-1" on:click={gridTiles.redraw}>Clean Grid</button>
+  <!-- Controls -->
+  <div class="col-center p-2 gap-4 md:w-[500px]">
+    <div class="flex gap-4 items-center">
+      <p>Draw</p>
+      <button class="btn btn-primary" on:click={() => grid.set_tile("wall")}>Draw Wall</button>
+      <button class="btn btn-primary" on:click={() => grid.set_tile("empty")}>Remove Wall</button>
+    </div>
+    <div class="flex gap-4 items-center">
+      <p>Actions</p>
+      <button class="btn btn-primary" on:click={grid.clean}>Clean Grid</button>
+      <button class="btn btn-primary" on:click={grid.clear}>Remove All Walls</button>
     </div>
 
-    <div>
-      <p>Animation</p>
-      {#if animIsRunning}
-        <button class="btn btn-secondary" on:click={stopAnim}>stop</button>
-      {:else}
-        <button class="btn btn-secondary" on:click={()=> run(10)}>start anim</button>
+    <hr class="border-b w-full border-primary">
+
+    {#await promise}
+      <button class="btn btn-primary" on:click={()=>abort.abort("Search stopped by user")}>Stop</button>
+     
+    {:then result} 
+      <button class="btn btn-primary" on:click={run}>Start</button>
+      {#if result?.success}
+        <p>Total cost: {result.total_cost}</p>
+      {:else if result?.success === false}
+        <p>No Possible Route</p>
       {/if}
-      {#if totalCost}
-        <p>Total Cost : {totalCost}</p>
-      {/if}
-    </div>
 
-    <div>
-      <p>Settings</p>
-      <details>
-        <summary>Enable 8 way movement &nbsp;
-          <input type="checkbox" bind:value={allowDiagonalMovement}/>
-        </summary>
-        <p>Allow diagonal movement</p>
-      </details>
+    {:catch error}
+      <button class="btn btn-primary" on:click={run}>Start</button>
+      <p>{error}</p>
+    {/await}
 
-      <details>
-        <summary>Heuristic Weight Compared to Cost</summary>
+    <p class="font-bold">Settings</p>
+    <div class="form-entries">
+      <p>Grid Tile Size: </p>
+      <input type="number" bind:value={grid_size}>
 
-        <p> Artificially scale the heuristic.
-          (<a href="https://en.wikipedia.org/wiki/A*_search_algorithm#:~:text=The%20heuristic%20function%20is%20problem,path%20from%20start%20to%20goal.">see more</a>)</p>
-      </details>
-      0 <input type="range" max="2" min="0" bind:value={heuristicWeight} /> 2
+      <p>Interval(ms): </p>
+      <input type="number" bind:value={search_settings.animation_delay} >
 
-      <details>
-        <summary>Distance Method for heuristic</summary>
-      </details>
-      <select bind:value={distanceMethod} class="border">
-        {#each Object.keys(distanceMethods) as t}
+      <p>Search function: </p>
+      <select bind:value={search_settings.search_method}>
+        {#each Object.keys(search_methods) as method}
+          <option value="{method}">{method}</option>
+        {/each}
+      </select>
+
+      <p>Enable 8 way movement: </p>
+      <Toggle bind:checked={search_settings.allow_diagonal_movement}/>
+
+      <p>Heuristic weight: </p>
+      <div class="flex gap-2">
+        0 <input type="range" max="5" min="0" bind:value={search_settings.heuristic_weight} step="0.5" /> 5 <small>({search_settings.heuristic_weight})</small>
+      </div>
+
+      <p>Heuristic Function: </p>
+      <select bind:value={search_settings.distance_method} class="border">
+        {#each Object.keys(distance_methods) as t}
           <option value={t}>{t}</option>
         {/each}
       </select>
     </div>
   </div>
-
-</div>
+</main>

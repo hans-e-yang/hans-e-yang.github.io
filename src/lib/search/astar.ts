@@ -1,6 +1,5 @@
 import type { SearchProblem, SearchResult } from "./types"
-import { runGenerator, type RunGeneratorOptions} from "./util"
-import { PriorityQueue } from "$lib/astar"
+import { runGenerator, type RunGeneratorOptions, PriorityQueue} from "./util"
 
 type AstarYield<State> = [known_added: State|undefined, frontier_added: State[]]
 
